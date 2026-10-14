@@ -11,28 +11,28 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
   :root{
-    --paper:#ECE8DC;
-    --paper-deep:#E1DCC9;
-    --card:#FBF9F3;
-    --ink:#242320;
-    --ink-soft:#6b665c;
-    --line:#cfc8b2;
-    --accent:#2F6F5E;
-    --accent-soft:#E1EBE4;
-    --mustard:#B5852B;
-    --danger:#A8402F;
-    --danger-soft:#F3E4DF;
-    --word:#33578F;
-    --pdf:#A8402F;
-    --excel:#2F6F5E;
-    --text:#8A6D1D;
+    --paper:#EEF1F5;
+    --paper-deep:#E0E6EE;
+    --card:#FBFCFD;
+    --ink:#2B3340;
+    --ink-soft:#667085;
+    --line:#D3DAE3;
+    --accent:#3E7C90;
+    --accent-soft:#DCEBF0;
+    --mustard:#F6E3A1;
+    --danger:#C0574D;
+    --danger-soft:#F8E5E2;
+    --word:#4F7FC0;
+    --pdf:#D2685E;
+    --excel:#4FA07A;
+    --text:#C49A3A;
     --radius:3px;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
     background:
-      radial-gradient(1200px 600px at 10% -10%, rgba(255,255,255,.35), transparent 60%),
+      radial-gradient(1200px 600px at 10% -10%, rgba(190,215,235,.45), transparent 60%),
       var(--paper);
     color:var(--ink);
     font-family:'Zen Kaku Gothic New', sans-serif;
@@ -96,7 +96,7 @@
     color:var(--ink);
     padding:4px 0;
   }
-  #searchInput::placeholder{color:#a39d8c;}
+  #searchInput::placeholder{color:#9AA3AF;}
   .filter-chips{display:flex;flex-wrap:wrap;gap:8px;}
   .chip{
     font-family:'IBM Plex Mono',monospace;
@@ -128,7 +128,7 @@
   }
   .btn:hover{border-color:var(--accent);color:var(--accent);}
   .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;}
-  .btn-primary:hover{background:#26594b;color:#fff;}
+  .btn-primary:hover{background:#336879;color:#fff;}
   .btn-ghost{background:transparent;border-color:transparent;color:var(--ink-soft);}
   .btn-ghost:hover{color:var(--ink);}
   .btn-danger{background:var(--danger-soft);border-color:var(--danger);color:var(--danger);}
@@ -174,9 +174,13 @@
     box-shadow:0 0 0 3px var(--card), inset 0 1px 2px rgba(0,0,0,.18);
     border:1px solid var(--line);
   }
+  .card.t-word{border-top:3px solid var(--word);}
+  .card.t-pdf{border-top:3px solid var(--pdf);}
+  .card.t-excel{border-top:3px solid var(--excel);}
+  .card.t-text{border-top:3px solid var(--text);}
   .card:hover{
     transform:translateY(-3px);
-    box-shadow:0 10px 22px rgba(36,35,32,.09);
+    box-shadow:0 10px 22px rgba(43,51,64,.10);
     border-color:var(--accent);
   }
   .card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
@@ -213,7 +217,7 @@
     -webkit-box-orient:vertical;
     overflow:hidden;
   }
-  .card-snippet mark{background:var(--mustard);color:#fff;padding:0 2px;border-radius:2px;}
+  .card-snippet mark{background:var(--mustard);color:var(--ink);padding:0 2px;border-radius:2px;}
   .card-tags{display:flex;flex-wrap:wrap;gap:6px;}
   .tag{
     font-family:'IBM Plex Mono',monospace;
@@ -244,7 +248,7 @@
   /* ---- Modal ---- */
   .modal-overlay{
     position:fixed;inset:0;
-    background:rgba(36,35,32,.45);
+    background:rgba(43,51,64,.45);
     display:flex;align-items:center;justify-content:center;
     padding:24px;
     z-index:50;
@@ -342,7 +346,7 @@
     overflow-y:auto;
     margin:0 0 18px;
   }
-  .detail-content mark{background:var(--mustard);color:#fff;padding:0 2px;border-radius:2px;}
+  .detail-content mark{background:var(--mustard);color:var(--ink);padding:0 2px;border-radius:2px;}
 
   /* ---- Toast ---- */
   .toast{
@@ -362,6 +366,15 @@
     .masthead h1{font-size:32px;}
     .toolbar .btn{flex:1;}
   }
+  .proto-note{
+    display:inline-block;
+    margin-top:14px;
+    font-size:12px;
+    color:var(--ink-soft);
+    background:var(--accent-soft);
+    padding:5px 14px;
+    border-radius:14px;
+  }
   [hidden]{display:none !important;}
 </style>
 </head>
@@ -372,6 +385,7 @@
     <div class="masthead-label">SHIRYŌ-KO · 資料庫</div>
     <h1>資料庫</h1>
     <p class="tagline">散らばった資料をひとつの棚に。探せば、すぐ出てくる。</p>
+    <div class="proto-note">試作版です。本番では共有データベースにする想定です（今は各自のブラウザ内にだけ保存されます）。</div>
   </header>
 
   <div class="search-wrap">
@@ -386,12 +400,14 @@
     <button class="btn btn-primary" id="btnPaste">＋ 貼り付けて追加</button>
     <button class="btn" id="btnUpload">＋ ファイルを取り込む</button>
     <div class="toolbar-spacer"></div>
-    <button class="btn btn-ghost" id="btnExport">書き出し（バックアップ）</button>
+    <button class="btn" id="btnClearSample" hidden>サンプルを消す</button>
+    <button class="btn btn-ghost" id="btnExport">書き出し（JSON）</button>
+    <button class="btn btn-ghost" id="btnExportCsv">書き出し（CSV）</button>
     <button class="btn btn-ghost" id="btnImport">読み込み</button>
     <button class="btn btn-ghost" id="btnClearAll">全データを削除</button>
     <input type="file" id="fileInput" multiple hidden accept=".docx,.pdf,.xlsx,.xls,.txt,.md,.csv">
     <input type="file" id="folderInput" hidden webkitdirectory directory multiple>
-    <input type="file" id="importInput" hidden accept=".json">
+    <input type="file" id="importInput" hidden accept=".json,.csv">
   </div>
 
   <div id="statusBar"></div>
@@ -491,6 +507,65 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 // normal browser, so data is kept in the browser's localStorage (tied to
 // this file/browser). Use "書き出し" regularly to back up your data as a
 // JSON file, since local storage can be cleared if you clear browser data.
+const SEEDED_KEY = 'shiryoko-seeded-v1';
+
+// Fictional sample notes (made-up names and numbers only).
+function makeSamples(){
+  const now = Date.now();
+  const day = 24*60*60*1000;
+  const mk = (i, type, title, content, tags, fileName)=>({
+    id: 'sample-' + i,
+    title, content, type, tags,
+    source: 'sample',
+    sample: true,
+    fileName,
+    createdAt: now - i*day
+  });
+  return [
+    mk(1,'word','（サンプル）定例会議 議事録',
+`日時：架空の月曜 10:00-11:00
+参加者：青木（進行）、伊藤、上田
+
+■ 決定事項
+・新サービスAの試験提供を来月から開始する
+・問い合わせ対応の担当を、伊藤さんから上田さんへ引き継ぐ
+
+■ 次回までの宿題
+・青木：提案書の最終版を作成
+・上田：顧客ヒアリングの結果をまとめる`,
+      ['会議','サンプル'],'サンプル_議事録.docx'),
+    mk(2,'pdf','（サンプル）新サービスA 提案書',
+`新サービスA 提案書（架空）
+
+1. 背景
+社内に散らばった資料を探す時間が、1人あたり週に約2時間かかっている。
+
+2. 提案
+資料を一箇所に集め、キーワードで検索できる仕組みを導入する。
+
+3. 期待する効果
+探す時間を半分に減らし、年間で約100時間を削減する見込み。`,
+      ['提案','サンプル'],'サンプル_提案書.pdf'),
+    mk(3,'excel','（サンプル）月次売上集計',
+`[Sheet1]
+月,商品,売上(千円)
+4月,商品A,120
+4月,商品B,85
+5月,商品A,140
+5月,商品B,92
+6月,商品A,155
+6月,商品B,101`,
+      ['集計','サンプル'],'サンプル_売上集計.xlsx'),
+    mk(4,'text','（サンプル）顧客ヒアリングメモ',
+`顧客X社（架空）ヒアリングメモ
+
+・最近の悩み：過去の提案書がどこにあるか分からず、毎回作り直している
+・欲しい機能：キーワード検索、更新日の表示
+・次のアクション：来週、デモ画面を見てもらう`,
+      ['顧客','メモ','サンプル'],'')
+  ];
+}
+
 function loadNotes(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -499,6 +574,16 @@ function loadNotes(){
     console.error(e);
     notes = [];
   }
+  // First visit only: show sample notes so the app isn't empty.
+  try{
+    if(!localStorage.getItem(SEEDED_KEY)){
+      if(notes.length === 0){
+        notes = makeSamples();
+        saveNotes();
+      }
+      localStorage.setItem(SEEDED_KEY, '1');
+    }
+  }catch(e){ console.error(e); }
   render();
 }
 
@@ -560,6 +645,7 @@ function formatDate(ts){
 }
 
 function render(){
+  $('#btnClearSample').hidden = !notes.some(n=>n.sample);
   renderFilterChips();
   const filtered = notes.filter(n =>
     (activeFilter==='all' || n.type===activeFilter) && matchesSearch(n, searchQuery)
@@ -578,11 +664,11 @@ function render(){
 
   filtered.forEach(note=>{
     const card = document.createElement('div');
-    card.className = 'card';
+    card.className = 'card t-' + note.type;
     card.innerHTML = `
       <div class="card-top">
         <span class="stamp ${note.type}">${TYPE_LABEL[note.type]}</span>
-        <span class="card-date">${formatDate(note.createdAt)}</span>
+        <span class="card-date">${note.sample ? 'SAMPLE · ' : ''}${formatDate(note.createdAt)}</span>
       </div>
       <h3 class="card-title">${escapeHtml(note.title)}</h3>
       <p class="card-snippet">${highlightSnippet(note.content, searchQuery)}</p>
@@ -824,7 +910,7 @@ function openDetail(id){
   $('#detailTitle').textContent = note.title;
   const metaParts = [formatDate(note.createdAt)];
   if(note.fileName) metaParts.push(note.fileName);
-  const sourceLabel = note.source === 'folder' ? 'フォルダ取り込み' : (note.source === 'file' ? 'ファイル取り込み' : '手入力');
+  const sourceLabel = note.source === 'sample' ? 'サンプル' : (note.source === 'folder' ? 'フォルダ取り込み' : (note.source === 'file' ? 'ファイル取り込み' : '手入力'));
   metaParts.push(sourceLabel);
   $('#detailMeta').textContent = metaParts.join(' ・ ');
   $('#detailTags').innerHTML = note.tags.map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('');
@@ -861,20 +947,107 @@ $('#searchInput').addEventListener('input', (e)=>{
 });
 
 // ---------- Export / Import ----------
-$('#btnExport').addEventListener('click', ()=>{
-  if(notes.length === 0){ showToast('書き出す資料がありません'); return; }
-  const blob = new Blob([JSON.stringify(notes, null, 2)], {type:'application/json'});
+const VALID_TYPES = ['word','pdf','excel','text'];
+
+function exportableNotes(){
+  return notes.filter(n=>!n.sample);   // sample notes are not exported
+}
+
+function downloadFile(filename, mime, data){
+  const blob = new Blob([data], {type:mime});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  const stamp = new Date().toISOString().slice(0,10);
   a.href = url;
-  a.download = `shiryoko-backup-${stamp}.json`;
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   a.remove();
   URL.revokeObjectURL(url);
-  showToast('バックアップを書き出しました');
+}
+
+function todayStamp(){ return new Date().toISOString().slice(0,10); }
+
+$('#btnExport').addEventListener('click', ()=>{
+  const list = exportableNotes();
+  if(list.length === 0){ showToast('書き出す資料がありません（サンプルは対象外です）'); return; }
+  downloadFile(`shiryoko-backup-${todayStamp()}.json`, 'application/json', JSON.stringify(list, null, 2));
+  showToast('JSONを書き出しました');
 });
+
+function csvEscape(v){
+  const str = String(v ?? '');
+  return /[",\r\n]/.test(str) ? '"' + str.replace(/"/g,'""') + '"' : str;
+}
+
+const CSV_COLUMNS = ['id','title','type','tags','source','fileName','createdAt','content'];
+
+$('#btnExportCsv').addEventListener('click', ()=>{
+  const list = exportableNotes();
+  if(list.length === 0){ showToast('書き出す資料がありません（サンプルは対象外です）'); return; }
+  const rows = [CSV_COLUMNS.join(',')];
+  list.forEach(n=>{
+    rows.push([
+      n.id, n.title, n.type,
+      (n.tags || []).join(';'),
+      n.source || '', n.fileName || '',
+      new Date(n.createdAt).toISOString(),
+      n.content
+    ].map(csvEscape).join(','));
+  });
+  // BOM so that Excel opens Japanese text correctly
+  downloadFile(`shiryoko-${todayStamp()}.csv`, 'text/csv;charset=utf-8', '﻿' + rows.join('\r\n'));
+  showToast('CSVを書き出しました');
+});
+
+// Minimal CSV parser (supports quoted fields, escaped quotes and line breaks in fields)
+function parseCSV(text){
+  if(text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for(let i=0; i<text.length; i++){
+    const c = text[i];
+    if(inQuotes){
+      if(c === '"'){
+        if(text[i+1] === '"'){ field += '"'; i++; }
+        else inQuotes = false;
+      } else field += c;
+    } else if(c === '"'){
+      inQuotes = true;
+    } else if(c === ','){
+      row.push(field); field = '';
+    } else if(c === '\n' || c === '\r'){
+      if(c === '\r' && text[i+1] === '\n') i++;
+      row.push(field); field = '';
+      rows.push(row); row = [];
+    } else field += c;
+  }
+  if(field !== '' || row.length > 0){ row.push(field); rows.push(row); }
+  return rows.filter(r => r.some(v => v !== ''));
+}
+
+function notesFromCSV(text){
+  const rows = parseCSV(text);
+  if(rows.length < 2) throw new Error('empty csv');
+  const header = rows[0].map(h=>h.trim());
+  if(!header.includes('title') || !header.includes('content')) throw new Error('missing columns');
+  const idx = name => header.indexOf(name);
+  return rows.slice(1).map(r=>{
+    const get = name => idx(name) >= 0 ? (r[idx(name)] ?? '') : '';
+    const t = get('createdAt');
+    const parsed = /^\d+$/.test(t) ? Number(t) : Date.parse(t);
+    const type = VALID_TYPES.includes(get('type')) ? get('type') : 'text';
+    return {
+      id: get('id') || crypto.randomUUID(),
+      title: get('title') || '（無題）',
+      content: get('content'),
+      type,
+      tags: get('tags').split(/[;；,、]/).map(x=>x.trim()).filter(Boolean),
+      source: get('source') || 'csv',
+      fileName: get('fileName') || undefined,
+      createdAt: isNaN(parsed) ? Date.now() : parsed
+    };
+  }).filter(n => n.title || n.content);
+}
 
 const importInput = $('#importInput');
 $('#btnImport').addEventListener('click', ()=> importInput.click());
@@ -884,7 +1057,8 @@ importInput.addEventListener('change', async (e)=>{
   if(!file) return;
   try{
     const text = await file.text();
-    const imported = JSON.parse(text);
+    const isCsv = file.name.toLowerCase().endsWith('.csv');
+    const imported = isCsv ? notesFromCSV(text) : JSON.parse(text);
     if(!Array.isArray(imported)) throw new Error('invalid format');
     const existingIds = new Set(notes.map(n=>n.id));
     let added = 0;
@@ -903,6 +1077,14 @@ importInput.addEventListener('change', async (e)=>{
     console.error(err);
     showToast('読み込みに失敗しました。ファイル形式をご確認ください');
   }
+});
+
+// ---------- Remove samples ----------
+$('#btnClearSample').addEventListener('click', ()=>{
+  notes = notes.filter(n=>!n.sample);
+  saveNotes();
+  render();
+  showToast('サンプルを消しました');
 });
 
 // ---------- Clear all ----------
